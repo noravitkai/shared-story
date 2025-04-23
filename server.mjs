@@ -1,4 +1,3 @@
-// server.mjs
 import express from "express";
 import next from "next";
 import http from "http";
@@ -8,7 +7,6 @@ const dev = process.env.NODE_ENV !== "production";
 const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
 
-// Shared state
 let story = [];
 let users = [];
 let currentTurnIndex = 0;
