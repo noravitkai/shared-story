@@ -18,13 +18,17 @@ nextApp.prepare().then(() => {
 
   io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
-    users.push(socket.id);
+
+    socket.on("join", (name) => {
+      users.push({ id: socket.id, name });
+      updateTurn();
+    });
 
     socket.emit("story_update", story);
     updateTurn();
 
     socket.on("new_sentence", (sentence) => {
-      if (socket.id === users[currentTurnIndex]) {
+      if (socket.id === users[currentTurnIndex]?.id) {
         story.push(sentence);
         io.emit("story_update", story);
         passTurn();
@@ -32,7 +36,7 @@ nextApp.prepare().then(() => {
     });
 
     socket.on("disconnect", () => {
-      users = users.filter((id) => id !== socket.id);
+      users = users.filter((user) => user.id !== socket.id);
       if (currentTurnIndex >= users.length) {
         currentTurnIndex = 0;
       }
@@ -45,8 +49,8 @@ nextApp.prepare().then(() => {
     }
 
     function updateTurn() {
-      users.forEach((id, index) => {
-        io.to(id).emit("your_turn", index === currentTurnIndex);
+      users.forEach((user, index) => {
+        io.to(user.id).emit("your_turn", index === currentTurnIndex);
       });
     }
   });

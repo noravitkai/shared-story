@@ -1,11 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSocket } from "@/lib/hooks/useSocket";
 
 export default function Home() {
-  const { story, isMyTurn, sendSentence } = useSocket();
+  const [name, setName] = useState("");
+  const [nameInput, setNameInput] = useState("");
   const [input, setInput] = useState("");
+  const [users, setUsers] = useState<string[]>([]);
+
+  const { story, isMyTurn, sendSentence, users: activeUsers } = useSocket(name);
+
+  useEffect(() => {
+    setUsers(activeUsers);
+  }, [activeUsers]);
+
+  if (!name) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f9f9f9] text-gray-900 font-serif px-4 py-10">
+        <div className="bg-white rounded-md shadow-md p-6 w-full max-w-md space-y-4">
+          <h1 className="text-2xl font-bold text-center">Enter Your Name</h1>
+          <input
+            type="text"
+            className="w-full border-b border-gray-400 focus:outline-none text-lg px-2 py-1"
+            placeholder="Your name..."
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+          />
+          <button
+            className="w-full bg-gray-900 text-white font-medium py-2 rounded disabled:opacity-40"
+            onClick={() => setName(nameInput.trim())}
+            disabled={!nameInput.trim()}
+          >
+            Join the Story
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = () => {
     if (!input.trim()) return;
@@ -17,7 +49,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#f9f9f9] text-gray-900 font-serif px-4 py-10">
       <div className="max-w-2xl mx-auto space-y-8">
         <h1 className="text-4xl font-bold text-center text-gray-800">
-          Shared Story
+          Lined
         </h1>
 
         <div
@@ -28,6 +60,24 @@ export default function Home() {
           }`}
         >
           {isMyTurn ? "Your turn to write ✍️" : "Waiting for your turn..."}
+        </div>
+
+        <div className="bg-white shadow-sm rounded-md px-4 py-3">
+          <h2 className="text-md font-medium text-gray-700 mb-2">Active Users:</h2>
+          <div className="flex flex-wrap gap-2">
+            {users.map((user, index) => (
+              <span
+                key={index}
+                className={`px-3 py-1 rounded-md text-sm border ${
+                  isMyTurn && user === name
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                {user}
+              </span>
+            ))}
+          </div>
         </div>
 
         <div className="bg-white shadow-sm rounded-md px-6 py-4">
