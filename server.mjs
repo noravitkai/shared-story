@@ -39,7 +39,13 @@ nextApp.prepare().then(() => {
     });
 
     socket.on("new_sentence", (sentence) => {
-      if (socket.id === users[currentTurnIndex]?.id) {
+      const MAX_CHARACTERS = 75;
+
+      if (
+        socket.id === users[currentTurnIndex]?.id &&
+        typeof sentence === "string" &&
+        sentence.length <= MAX_CHARACTERS
+      ) {
         story.push(sentence);
         io.emit("story_update", story);
         passTurn();

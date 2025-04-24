@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useSocket } from "@/lib/hooks/useSocket";
 
+const MAX_CHARACTERS = 75;
+
 export default function Home() {
   const [name, setName] = useState("");
   const [nameInput, setNameInput] = useState("");
@@ -138,6 +140,7 @@ export default function Home() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={!isMyTurn}
+            maxLength={MAX_CHARACTERS}
           />
           <button
             onClick={handleSubmit}
@@ -146,6 +149,9 @@ export default function Home() {
           >
             Send
           </button>
+          <p className="text-sm text-gray-500">
+            {input.length}/{MAX_CHARACTERS} characters
+          </p>
         </div>
       </div>
     </div>
