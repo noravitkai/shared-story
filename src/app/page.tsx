@@ -18,6 +18,8 @@ export default function Home() {
     users: activeUsers,
     timeLeft: socketTimeLeft,
     currentTurnIndex,
+    isEnded,
+    resetGame,
   } = useSocket(name);
 
   useEffect(() => {
@@ -143,12 +145,12 @@ export default function Home() {
             className="flex-1 bg-transparent border-b border-gray-300 focus:outline-none focus:border-black transition px-1 py-2 text-lg"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            disabled={!isMyTurn}
+            disabled={!isMyTurn || isEnded}
             maxLength={MAX_CHARACTERS}
           />
           <button
             onClick={handleSubmit}
-            disabled={!isMyTurn || !input.trim()}
+            disabled={!isMyTurn || !input.trim() || isEnded}
             className="px-6 py-2 text-sm bg-gray-900 text-white font-semibold rounded-md disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Send
@@ -157,6 +159,18 @@ export default function Home() {
             {input.length}/{MAX_CHARACTERS} characters
           </p>
         </div>
+
+        {isEnded && (
+          <div className="text-center mt-6">
+            <p className="text-sm text-gray-600 mb-2">The story has ended.</p>
+            <button
+              onClick={resetGame}
+              className="px-6 py-2 bg-gray-800 text-white font-medium rounded-md hover:bg-black transition"
+            >
+              Start New Story
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

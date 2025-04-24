@@ -11,6 +11,7 @@ export function useSocket(name: string) {
   const [users, setUsers] = useState<string[]>([]);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [currentTurnIndex, setCurrentTurnIndex] = useState<number>(0);
+  const [isEnded, setIsEnded] = useState(false);
 
   useEffect(() => {
     if (!name) return;
@@ -33,14 +34,17 @@ export function useSocket(name: string) {
         users: newUsers,
         currentTurnIndex,
         turnTimeLeft,
+        isEnded,
       }: {
         users: string[];
         currentTurnIndex: number;
         turnTimeLeft: number;
+        isEnded: boolean;
       }) => {
         setUsers(newUsers);
         setCurrentTurnIndex(currentTurnIndex);
         setTimeLeft(turnTimeLeft);
+        setIsEnded(isEnded);
       }
     );
 
@@ -57,5 +61,18 @@ export function useSocket(name: string) {
     socket?.emit("new_sentence", sentence);
   }
 
-  return { story, isMyTurn, sendSentence, users, timeLeft, currentTurnIndex };
+  function resetGame() {
+    socket?.emit("reset_game");
+  }
+
+  return {
+    story,
+    isMyTurn,
+    sendSentence,
+    users,
+    timeLeft,
+    currentTurnIndex,
+    isEnded,
+    resetGame,
+  };
 }

@@ -12,6 +12,7 @@ let users = [];
 let currentTurnIndex = 0;
 let turnTimeLeft = 30;
 let turnTimer;
+let isEnded = false;
 
 nextApp.prepare().then(() => {
   const app = express();
@@ -43,21 +44,53 @@ nextApp.prepare().then(() => {
         users: users.map((user) => user.name),
         currentTurnIndex,
         turnTimeLeft,
+        isEnded,
       });
     });
 
     socket.on("new_sentence", (sentence) => {
       const MAX_CHARACTERS = 75;
+      const trimmed = String(sentence).trim();
 
       if (
-        socket.id === users[currentTurnIndex]?.id &&
-        typeof sentence === "string" &&
-        sentence.length <= MAX_CHARACTERS
+        isEnded ||
+        socket.id !== users[currentTurnIndex]?.id ||
+        typeof trimmed !== "string" ||
+        trimmed.length > MAX_CHARACTERS
       ) {
-        story.push(sentence);
-        io.emit("story_update", story);
+        return;
+      }
+
+      story.push(trimmed);
+      io.emit("story_update", story);
+
+      if (trimmed === "/THE END") {
+        isEnded = true;
+        clearInterval(turnTimer);
+        io.emit("game_state", {
+          users: users.map((user) => user.name),
+          currentTurnIndex,
+          turnTimeLeft,
+          isEnded,
+        });
+      } else {
         passTurn();
       }
+    });
+
+    socket.on("reset_game", () => {
+      story = [];
+      currentTurnIndex = 0;
+      turnTimeLeft = 30;
+      isEnded = false;
+      updateTurn();
+      io.emit("story_update", story);
+      io.emit("game_state", {
+        users: users.map((user) => user.name),
+        currentTurnIndex,
+        turnTimeLeft,
+        isEnded,
+      });
     });
 
     socket.on("disconnect", () => {
@@ -70,6 +103,7 @@ nextApp.prepare().then(() => {
         users: users.map((user) => user.name),
         currentTurnIndex,
         turnTimeLeft,
+        isEnded,
       });
       if (users.length === 0) clearInterval(turnTimer);
     });
@@ -101,6 +135,7 @@ nextApp.prepare().then(() => {
         users: users.map((user) => user.name),
         currentTurnIndex,
         turnTimeLeft,
+        isEnded,
       });
     }
   });
