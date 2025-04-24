@@ -8,12 +8,20 @@ export default function Home() {
   const [nameInput, setNameInput] = useState("");
   const [input, setInput] = useState("");
   const [users, setUsers] = useState<string[]>([]);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
-  const { story, isMyTurn, sendSentence, users: activeUsers } = useSocket(name);
+  const {
+    story,
+    isMyTurn,
+    sendSentence,
+    users: activeUsers,
+    timeLeft: socketTimeLeft,
+  } = useSocket(name);
 
   useEffect(() => {
     setUsers(activeUsers);
-  }, [activeUsers]);
+    setTimeLeft(socketTimeLeft);
+  }, [activeUsers, socketTimeLeft]);
 
   if (!name) {
     return (
@@ -48,9 +56,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#f9f9f9] text-gray-900 font-serif px-4 py-10">
       <div className="max-w-2xl mx-auto space-y-8">
-        <h1 className="text-4xl font-bold text-center text-gray-800">
-          Lined
-        </h1>
+        <h1 className="text-4xl font-bold text-center text-gray-800">Lined</h1>
 
         <div
           className={`rounded-md px-4 py-3 text-sm font-medium tracking-wide text-center ${
@@ -60,10 +66,17 @@ export default function Home() {
           }`}
         >
           {isMyTurn ? "Your turn to write ✍️" : "Waiting for your turn..."}
+          {timeLeft !== null && (
+            <div className="mt-1 text-xs text-gray-600">
+              ⏳ {timeLeft} second{timeLeft !== 1 ? "s" : ""} left
+            </div>
+          )}
         </div>
 
         <div className="bg-white shadow-sm rounded-md px-4 py-3">
-          <h2 className="text-md font-medium text-gray-700 mb-2">Active Users:</h2>
+          <h2 className="text-md font-medium text-gray-700 mb-2">
+            Active Users:
+          </h2>
           <div className="flex flex-wrap gap-2">
             {users.map((user, index) => (
               <span

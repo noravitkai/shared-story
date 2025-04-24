@@ -9,6 +9,7 @@ export function useSocket(name: string) {
   const [story, setStory] = useState<string[]>([]);
   const [isMyTurn, setIsMyTurn] = useState(false);
   const [users, setUsers] = useState<string[]>([]);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   useEffect(() => {
     if (!name) return;
@@ -29,6 +30,10 @@ export function useSocket(name: string) {
       setUsers(userList);
     });
 
+    socket.on("timer_tick", (seconds: number) => {
+      setTimeLeft(seconds);
+    });
+
     return () => {
       socket?.disconnect();
     };
@@ -38,5 +43,5 @@ export function useSocket(name: string) {
     socket?.emit("new_sentence", sentence);
   }
 
-  return { story, isMyTurn, sendSentence, users };
+  return { story, isMyTurn, sendSentence, users, timeLeft };
 }
