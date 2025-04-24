@@ -10,6 +10,8 @@ const handle = nextApp.getRequestHandler();
 let story = [];
 let users = [];
 let currentTurnIndex = 0;
+let turnTimeLeft = 30;
+let turnTimer;
 
 nextApp.prepare().then(() => {
   const app = express();
@@ -21,12 +23,20 @@ nextApp.prepare().then(() => {
 
     socket.on("join", (name) => {
       users.push({ id: socket.id, name });
-      updateTurn();
-      io.emit("active_users", users.map((user) => user.name));
-    });
 
-    socket.emit("story_update", story);
-    updateTurn();
+      if (users.length === 1) {
+        updateTurn();
+      }
+
+      socket.emit("story_update", story);
+      socket.emit("your_turn", users.length - 1 === currentTurnIndex);
+
+      io.emit("game_state", {
+        users: users.map((user) => user.name),
+        currentTurnIndex,
+        turnTimeLeft,
+      });
+    });
 
     socket.on("new_sentence", (sentence) => {
       if (socket.id === users[currentTurnIndex]?.id) {
@@ -42,7 +52,12 @@ nextApp.prepare().then(() => {
         currentTurnIndex = 0;
       }
       updateTurn();
-      io.emit("active_users", users.map((user) => user.name));
+      io.emit("game_state", {
+        users: users.map((user) => user.name),
+        currentTurnIndex,
+        turnTimeLeft,
+      });
+      if (users.length === 0) clearInterval(turnTimer);
     });
 
     function passTurn() {
@@ -53,6 +68,25 @@ nextApp.prepare().then(() => {
     function updateTurn() {
       users.forEach((user, index) => {
         io.to(user.id).emit("your_turn", index === currentTurnIndex);
+      });
+
+      clearInterval(turnTimer);
+      turnTimeLeft = 30;
+      io.emit("timer_tick", turnTimeLeft);
+
+      turnTimer = setInterval(() => {
+        turnTimeLeft--;
+        io.emit("timer_tick", turnTimeLeft);
+
+        if (turnTimeLeft <= 0) {
+          passTurn();
+        }
+      }, 1000);
+
+      io.emit("game_state", {
+        users: users.map((user) => user.name),
+        currentTurnIndex,
+        turnTimeLeft,
       });
     }
   });

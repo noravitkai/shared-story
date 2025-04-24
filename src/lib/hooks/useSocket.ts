@@ -9,6 +9,8 @@ export function useSocket(name: string) {
   const [story, setStory] = useState<string[]>([]);
   const [isMyTurn, setIsMyTurn] = useState(false);
   const [users, setUsers] = useState<string[]>([]);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [currentTurnIndex, setCurrentTurnIndex] = useState<number>(0);
 
   useEffect(() => {
     if (!name) return;
@@ -25,8 +27,25 @@ export function useSocket(name: string) {
       setIsMyTurn(turnStatus);
     });
 
-    socket.on("active_users", (userList: string[]) => {
-      setUsers(userList);
+    socket.on(
+      "game_state",
+      ({
+        users: newUsers,
+        currentTurnIndex,
+        turnTimeLeft,
+      }: {
+        users: string[];
+        currentTurnIndex: number;
+        turnTimeLeft: number;
+      }) => {
+        setUsers(newUsers);
+        setCurrentTurnIndex(currentTurnIndex);
+        setTimeLeft(turnTimeLeft);
+      }
+    );
+
+    socket.on("timer_tick", (seconds: number) => {
+      setTimeLeft(seconds);
     });
 
     return () => {
@@ -38,5 +57,5 @@ export function useSocket(name: string) {
     socket?.emit("new_sentence", sentence);
   }
 
-  return { story, isMyTurn, sendSentence, users };
+  return { story, isMyTurn, sendSentence, users, timeLeft, currentTurnIndex };
 }
