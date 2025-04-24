@@ -7,7 +7,6 @@ export default function Home() {
   const [name, setName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [input, setInput] = useState("");
-  const [users, setUsers] = useState<string[]>([]);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   const {
@@ -16,12 +15,12 @@ export default function Home() {
     sendSentence,
     users: activeUsers,
     timeLeft: socketTimeLeft,
+    currentTurnIndex,
   } = useSocket(name);
 
   useEffect(() => {
-    setUsers(activeUsers);
     setTimeLeft(socketTimeLeft);
-  }, [activeUsers, socketTimeLeft]);
+  }, [socketTimeLeft]);
 
   if (!name) {
     return (
@@ -68,7 +67,24 @@ export default function Home() {
           {isMyTurn ? "Your turn to write ✍️" : "Waiting for your turn..."}
           {timeLeft !== null && (
             <div className="mt-1 text-xs text-gray-600">
-              ⏳ {timeLeft} second{timeLeft !== 1 ? "s" : ""} left
+              {(() => {
+                const myIndex = activeUsers.findIndex((u) => u === name);
+                if (myIndex === -1 || currentTurnIndex === -1) return null;
+                const turnsAway =
+                  myIndex >= currentTurnIndex
+                    ? myIndex - currentTurnIndex
+                    : activeUsers.length - currentTurnIndex + myIndex;
+
+                const estimatedTime = timeLeft + (turnsAway - 1) * 30;
+
+                return turnsAway === 0 ? (
+                  <>
+                    ⏳ {timeLeft} second{timeLeft !== 1 ? "s" : ""} left
+                  </>
+                ) : (
+                  <>⌛ Your turn in {estimatedTime} seconds</>
+                );
+              })()}
             </div>
           )}
         </div>
@@ -78,7 +94,7 @@ export default function Home() {
             Active Users:
           </h2>
           <div className="flex flex-wrap gap-2">
-            {users.map((user, index) => (
+            {activeUsers.map((user, index) => (
               <span
                 key={index}
                 className={`px-3 py-1 rounded-md text-sm border ${

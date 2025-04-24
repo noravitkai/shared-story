@@ -23,15 +23,20 @@ nextApp.prepare().then(() => {
 
     socket.on("join", (name) => {
       users.push({ id: socket.id, name });
-      updateTurn();
-      io.emit(
-        "active_users",
-        users.map((user) => user.name)
-      );
-    });
 
-    socket.emit("story_update", story);
-    updateTurn();
+      if (users.length === 1) {
+        updateTurn();
+      }
+
+      socket.emit("story_update", story);
+      socket.emit("your_turn", users.length - 1 === currentTurnIndex);
+
+      io.emit("game_state", {
+        users: users.map((user) => user.name),
+        currentTurnIndex,
+        turnTimeLeft,
+      });
+    });
 
     socket.on("new_sentence", (sentence) => {
       if (socket.id === users[currentTurnIndex]?.id) {
@@ -47,10 +52,11 @@ nextApp.prepare().then(() => {
         currentTurnIndex = 0;
       }
       updateTurn();
-      io.emit(
-        "active_users",
-        users.map((user) => user.name)
-      );
+      io.emit("game_state", {
+        users: users.map((user) => user.name),
+        currentTurnIndex,
+        turnTimeLeft,
+      });
       if (users.length === 0) clearInterval(turnTimer);
     });
 
@@ -76,6 +82,12 @@ nextApp.prepare().then(() => {
           passTurn();
         }
       }, 1000);
+
+      io.emit("game_state", {
+        users: users.map((user) => user.name),
+        currentTurnIndex,
+        turnTimeLeft,
+      });
     }
   });
 
