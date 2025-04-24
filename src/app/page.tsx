@@ -90,15 +90,13 @@ export default function Home() {
         </div>
 
         <div className="bg-white shadow-sm rounded-md px-4 py-3">
-          <h2 className="text-md font-medium text-gray-700 mb-2">
-            Active Users:
-          </h2>
+          <h2 className="text-md font-medium text-gray-700 mb-2">Users:</h2>
           <div className="flex flex-wrap gap-2">
             {activeUsers.map((user, index) => (
               <span
                 key={index}
                 className={`px-3 py-1 rounded-md text-sm border ${
-                  isMyTurn && user === name
+                  index === currentTurnIndex
                     ? "bg-black text-white"
                     : "bg-gray-100 text-gray-700"
                 }`}
