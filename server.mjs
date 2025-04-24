@@ -22,6 +22,7 @@ nextApp.prepare().then(() => {
     socket.on("join", (name) => {
       users.push({ id: socket.id, name });
       updateTurn();
+      io.emit("active_users", users.map((user) => user.name));
     });
 
     socket.emit("story_update", story);
@@ -41,6 +42,7 @@ nextApp.prepare().then(() => {
         currentTurnIndex = 0;
       }
       updateTurn();
+      io.emit("active_users", users.map((user) => user.name));
     });
 
     function passTurn() {
