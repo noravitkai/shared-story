@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useSocket } from "@/lib/hooks/useSocket";
 
+const MAX_CHARACTERS = 75;
+
 export default function Home() {
   const [name, setName] = useState("");
   const [nameInput, setNameInput] = useState("");
@@ -16,6 +18,8 @@ export default function Home() {
     users: activeUsers,
     timeLeft: socketTimeLeft,
     currentTurnIndex,
+    isEnded,
+    resetGame,
   } = useSocket(name);
 
   useEffect(() => {
@@ -33,11 +37,15 @@ export default function Home() {
             placeholder="Your name..."
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
+            maxLength={20}
           />
+          <p className="text-sm text-gray-500">
+            {nameInput.length}/20 characters (min 3)
+          </p>
           <button
             className="w-full bg-gray-900 text-white font-medium py-2 rounded disabled:opacity-40"
             onClick={() => setName(nameInput.trim())}
-            disabled={!nameInput.trim()}
+            disabled={nameInput.trim().length < 3 || nameInput.trim().length > 20}
           >
             Join the Story
           </button>
@@ -137,16 +145,32 @@ export default function Home() {
             className="flex-1 bg-transparent border-b border-gray-300 focus:outline-none focus:border-black transition px-1 py-2 text-lg"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            disabled={!isMyTurn}
+            disabled={!isMyTurn || isEnded}
+            maxLength={MAX_CHARACTERS}
           />
           <button
             onClick={handleSubmit}
-            disabled={!isMyTurn || !input.trim()}
+            disabled={!isMyTurn || !input.trim() || isEnded}
             className="px-6 py-2 text-sm bg-gray-900 text-white font-semibold rounded-md disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Send
           </button>
+          <p className="text-sm text-gray-500">
+            {input.length}/{MAX_CHARACTERS} characters
+          </p>
         </div>
+
+        {isEnded && (
+          <div className="text-center mt-6">
+            <p className="text-sm text-gray-600 mb-2">The story has ended.</p>
+            <button
+              onClick={resetGame}
+              className="px-6 py-2 bg-gray-800 text-white font-medium rounded-md hover:bg-black transition"
+            >
+              Start New Story
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

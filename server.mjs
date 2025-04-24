@@ -12,6 +12,7 @@ let users = [];
 let currentTurnIndex = 0;
 let turnTimeLeft = 30;
 let turnTimer;
+let isEnded = false;
 
 nextApp.prepare().then(() => {
   const app = express();
@@ -22,7 +23,15 @@ nextApp.prepare().then(() => {
     console.log("User connected:", socket.id);
 
     socket.on("join", (name) => {
-      users.push({ id: socket.id, name });
+      const trimmedName = String(name).trim();
+      const MIN_LENGTH = 3;
+      const MAX_LENGTH = 20;
+
+      if (trimmedName.length < MIN_LENGTH || trimmedName.length > MAX_LENGTH) {
+        return;
+      }
+
+      users.push({ id: socket.id, name: trimmedName });
 
       if (users.length === 1) {
         updateTurn();
@@ -35,15 +44,53 @@ nextApp.prepare().then(() => {
         users: users.map((user) => user.name),
         currentTurnIndex,
         turnTimeLeft,
+        isEnded,
       });
     });
 
     socket.on("new_sentence", (sentence) => {
-      if (socket.id === users[currentTurnIndex]?.id) {
-        story.push(sentence);
-        io.emit("story_update", story);
+      const MAX_CHARACTERS = 75;
+      const trimmed = String(sentence).trim();
+
+      if (
+        isEnded ||
+        socket.id !== users[currentTurnIndex]?.id ||
+        typeof trimmed !== "string" ||
+        trimmed.length > MAX_CHARACTERS
+      ) {
+        return;
+      }
+
+      story.push(trimmed);
+      io.emit("story_update", story);
+
+      if (trimmed === "/THE END") {
+        isEnded = true;
+        clearInterval(turnTimer);
+        io.emit("game_state", {
+          users: users.map((user) => user.name),
+          currentTurnIndex,
+          turnTimeLeft,
+          isEnded,
+        });
+      } else {
         passTurn();
       }
+    });
+
+    socket.on("reset_game", () => {
+      story = [];
+      currentTurnIndex = 0;
+      turnTimeLeft = 30;
+      isEnded = false;
+      updateTurn();
+      io.emit("story_update", story);
+      io.emit("game_state", {
+        users: users.map((user) => user.name),
+        currentTurnIndex,
+        turnTimeLeft,
+        isEnded,
+      });
     });
 
     socket.on("disconnect", () => {
@@ -56,6 +103,7 @@ nextApp.prepare().then(() => {
         users: users.map((user) => user.name),
         currentTurnIndex,
         turnTimeLeft,
+        isEnded,
       });
       if (users.length === 0) clearInterval(turnTimer);
     });
@@ -87,6 +135,7 @@ nextApp.prepare().then(() => {
         users: users.map((user) => user.name),
         currentTurnIndex,
         turnTimeLeft,
+        isEnded,
       });
     }
   });
