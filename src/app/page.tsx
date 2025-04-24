@@ -35,11 +35,15 @@ export default function Home() {
             placeholder="Your name..."
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
+            maxLength={20}
           />
+          <p className="text-sm text-gray-500">
+            {nameInput.length}/20 characters (min 3)
+          </p>
           <button
             className="w-full bg-gray-900 text-white font-medium py-2 rounded disabled:opacity-40"
             onClick={() => setName(nameInput.trim())}
-            disabled={!nameInput.trim()}
+            disabled={nameInput.trim().length < 3 || nameInput.trim().length > 20}
           >
             Join the Story
           </button>

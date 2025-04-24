@@ -22,7 +22,15 @@ nextApp.prepare().then(() => {
     console.log("User connected:", socket.id);
 
     socket.on("join", (name) => {
-      users.push({ id: socket.id, name });
+      const trimmedName = String(name).trim();
+      const MIN_LENGTH = 3;
+      const MAX_LENGTH = 20;
+
+      if (trimmedName.length < MIN_LENGTH || trimmedName.length > MAX_LENGTH) {
+        return;
+      }
+
+      users.push({ id: socket.id, name: trimmedName });
 
       if (users.length === 1) {
         updateTurn();
