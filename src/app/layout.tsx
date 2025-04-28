@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Shared Story",
   description: "A real-time collaborative story writing app.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
