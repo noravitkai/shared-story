@@ -7,6 +7,7 @@ const dev = process.env.NODE_ENV !== "production";
 const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
 
+// story entries are { text: string, author: string }
 let story = [];
 let users = [];
 let currentTurnIndex = 0;
@@ -61,7 +62,8 @@ nextApp.prepare().then(() => {
         return;
       }
 
-      story.push(trimmed);
+      const author = users[currentTurnIndex].name;
+      story.push({ text: trimmed, author });
       io.emit("story_update", story);
 
       if (trimmed === "/THE END") {

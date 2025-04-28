@@ -6,7 +6,7 @@ type SocketType = ReturnType<typeof io>;
 let socket: SocketType | undefined;
 
 export function useSocket(name: string) {
-  const [story, setStory] = useState<string[]>([]);
+  const [story, setStory] = useState<{ text: string; author: string }[]>([]);
   const [isMyTurn, setIsMyTurn] = useState(false);
   const [users, setUsers] = useState<string[]>([]);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -20,7 +20,7 @@ export function useSocket(name: string) {
 
     socket.emit("join", name);
 
-    socket.on("story_update", (updatedStory: string[]) => {
+    socket.on("story_update", (updatedStory: { text: string; author: string }[]) => {
       setStory(updatedStory);
     });
 

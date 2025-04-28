@@ -170,14 +170,14 @@ export default function Home() {
               {story.length === 0 ? (
                 <p className="text-gray-400 italic">No one has started yet...</p>
               ) : (
-                story.map((line, index) => (
+                story.map(({ text, author }, index) => (
                   <blockquote
                     key={index}
                     className="border-l-4 border-accent pl-4 italic text-gray-800 mb-4"
                   >
-                    {line}
+                    {text}
                     <span className="block text-xs italic text-gray-400 mt-1">
-                      — {activeUsers[index % activeUsers.length]}
+                      — {author}
                     </span>
                   </blockquote>
                 ))
