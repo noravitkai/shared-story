@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSocket } from "@/lib/hooks/useSocket";
 import Image from "next/image";
+import { BookmarkIcon, ClockIcon, PlayIcon } from "@heroicons/react/24/solid";
 
 const MAX_CHARACTERS = 75;
 
@@ -139,11 +140,14 @@ export default function Home() {
                       const estimatedTime = timeLeft + (turnsAway - 1) * 30;
                       return turnsAway === 0 ? (
                         <>
-                          ⏳ {timeLeft} second{timeLeft !== 1 ? "s" : ""} left
-                          to write
+                          <ClockIcon className="w-5 h-5 inline-block mr-1 text-gray-700" />
+                          {timeLeft} second{timeLeft !== 1 ? "s" : ""} left to write
                         </>
                       ) : (
-                        <>⌛ Your turn in {estimatedTime} seconds</>
+                        <>
+                          <ClockIcon className="w-5 h-5 inline-block mr-1 text-gray-700" />
+                          Your turn in {estimatedTime} seconds
+                        </>
                       );
                     })()}
                   </>
@@ -171,6 +175,9 @@ export default function Home() {
                   className="border-l-4 border-accent pl-4 italic text-gray-800 mb-4"
                 >
                   {line}
+                  <span className="block text-xs italic text-gray-400 mt-1">
+                    — {activeUsers[index % activeUsers.length]}
+                  </span>
                 </blockquote>
               ))
             )}
@@ -228,6 +235,15 @@ export default function Home() {
               To begin a new story, click{" "}
               <span className="font-semibold">Start New Story</span> at the top.
             </li>
+            <li>
+              Use <span className="font-semibold">...</span> to indicate  someone should continue your sentence.
+            </li>
+            <li>
+              Keep your sentences short and connected to the previous ones.
+            </li>
+            <li>
+              Have fun — unexpected twists are encouraged!
+            </li>
           </ul>
         </div>
 
@@ -236,16 +252,22 @@ export default function Home() {
           <h2 className="text-xl font-semibold text-gray-800 mb-2">Players:</h2>
           <div className="flex flex-col gap-2">
             {activeUsers.map((user, index) => (
-              <span
-                key={index}
-                className={`px-3 py-1 rounded-md text-sm border text-center ${
-                  index === currentTurnIndex
-                    ? "bg-black text-white"
-                    : "bg-gray-100 text-gray-700"
-                }`}
-              >
-                {user}
-              </span>
+              <div key={index} className="relative">
+                <span
+                  className={`px-3 py-1 rounded-md text-sm border text-center block ${
+                    index === currentTurnIndex
+                      ? "bg-black text-white"
+                      : "bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  {user}
+                </span>
+                {index === currentTurnIndex && (
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-gray-100 border rounded-full flex items-center justify-center">
+                    <BookmarkIcon className="w-4 h-4 text-gray-900 p-0.5" />
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>
