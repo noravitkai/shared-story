@@ -97,9 +97,9 @@ export default function Home() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_250px] gap-6 min-h-screen overflow-hidden box-border p-6 bg-[#f9f9f9] font-serif text-gray-900">
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_250px] gap-6 h-screen box-border p-6 bg-[#f9f9f9] font-serif text-gray-900">
       {/* Right content area */}
-      <div className="flex flex-col h-full gap-6 min-h-0">
+      <div className="flex flex-col flex-1 min-h-0 gap-6">
         {/* Turn Countdown / Ended Message */}
         <div className="bg-white rounded p-4 shadow">
           <div className="flex items-center justify-between">
@@ -131,8 +131,7 @@ export default function Home() {
                   <>
                     {(() => {
                       const myIndex = activeUsers.findIndex((u) => u === name);
-                      if (myIndex === -1 || currentTurnIndex === -1)
-                        return null;
+                      if (myIndex === -1 || currentTurnIndex === -1) return null;
                       const turnsAway =
                         myIndex >= currentTurnIndex
                           ? myIndex - currentTurnIndex
@@ -157,62 +156,65 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Story Lines - scrollable middle */}
-        <div className="bg-white rounded p-4 shadow flex-1 flex flex-col min-h-0">
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            The Story:
-          </h2>
-          <div
-            ref={storyContainerRef}
-            className="flex-1 overflow-y-auto min-h-0"
-          >
-            {story.length === 0 ? (
-              <p className="text-gray-400 italic">No one has started yet...</p>
-            ) : (
-              story.map((line, index) => (
-                <blockquote
-                  key={index}
-                  className="border-l-4 border-accent pl-4 italic text-gray-800 mb-4"
-                >
-                  {line}
-                  <span className="block text-xs italic text-gray-400 mt-1">
-                    — {activeUsers[index % activeUsers.length]}
-                  </span>
-                </blockquote>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Input Box - bottom */}
-        <div className="bg-white rounded p-4 shadow">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-            className="flex flex-col gap-4 sm:grid sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-6"
-          >
-            <input
-              type="text"
-              placeholder="Write your sentence..."
-              className="flex-1 bg-transparent border-b border-gray-300 focus:outline-none focus:border-black transition px-1 py-2 text-lg"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={!isMyTurn || isEnded}
-              maxLength={MAX_CHARACTERS}
-            />
-            <p className="text-sm text-gray-500">
-              {input.length}/{MAX_CHARACTERS} characters
-            </p>
-            <button
-              type="submit"
-              disabled={!isMyTurn || !input.trim() || isEnded}
-              className="w-auto self-start px-6 py-2 text-sm bg-gray-900 text-white font-semibold rounded-md disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black cursor-pointer"
+        {/* Story Lines and Input Box grouped */}
+        <div className="flex flex-col flex-1 min-h-0 gap-4">
+          {/* Story Lines - scrollable */}
+          <div className="bg-white rounded p-4 shadow flex-1 flex flex-col min-h-0">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              The Story:
+            </h2>
+            <div
+              ref={storyContainerRef}
+              className="flex-1 overflow-y-auto min-h-0"
             >
-              Send
-            </button>
-          </form>
+              {story.length === 0 ? (
+                <p className="text-gray-400 italic">No one has started yet...</p>
+              ) : (
+                story.map((line, index) => (
+                  <blockquote
+                    key={index}
+                    className="border-l-4 border-accent pl-4 italic text-gray-800 mb-4"
+                  >
+                    {line}
+                    <span className="block text-xs italic text-gray-400 mt-1">
+                      — {activeUsers[index % activeUsers.length]}
+                    </span>
+                  </blockquote>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Input Box - bottom */}
+          <div className="bg-white rounded p-4 shadow">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+              className="flex flex-col gap-4 sm:grid sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-6"
+            >
+              <input
+                type="text"
+                placeholder="Write your sentence..."
+                className="flex-1 bg-transparent border-b border-gray-300 focus:outline-none focus:border-black transition px-1 py-2 text-lg"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={!isMyTurn || isEnded}
+                maxLength={MAX_CHARACTERS}
+              />
+              <p className="text-sm text-gray-500">
+                {input.length}/{MAX_CHARACTERS} characters
+              </p>
+              <button
+                type="submit"
+                disabled={!isMyTurn || !input.trim() || isEnded}
+                className="w-auto self-start px-6 py-2 text-sm bg-gray-900 text-white font-semibold rounded-md disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black cursor-pointer"
+              >
+                Send
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 
