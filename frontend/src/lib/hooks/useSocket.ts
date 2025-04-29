@@ -16,13 +16,23 @@ export function useSocket(name: string) {
   useEffect(() => {
     if (!name) return;
 
-    socket = io();
+    const socketUrl =
+      process.env.NODE_ENV === "production"
+        ? process.env.NEXT_PUBLIC_SOCKET_URL_PROD
+        : process.env.NEXT_PUBLIC_SOCKET_URL_DEV;
+
+    socket = io(socketUrl || "", {
+      transports: ["websocket"],
+    });
 
     socket.emit("join", name);
 
-    socket.on("story_update", (updatedStory: { text: string; author: string }[]) => {
-      setStory(updatedStory);
-    });
+    socket.on(
+      "story_update",
+      (updatedStory: { text: string; author: string }[]) => {
+        setStory(updatedStory);
+      }
+    );
 
     socket.on("your_turn", (turnStatus: boolean) => {
       setIsMyTurn(turnStatus);

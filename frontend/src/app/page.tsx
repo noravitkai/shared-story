@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSocket } from "@/lib/hooks/useSocket";
 import Image from "next/image";
-import { BookmarkIcon, ClockIcon, PlayIcon } from "@heroicons/react/24/solid";
+import { BookmarkIcon, ClockIcon } from "@heroicons/react/24/solid";
 
 const MAX_CHARACTERS = 75;
 
@@ -131,7 +131,8 @@ export default function Home() {
                   <>
                     {(() => {
                       const myIndex = activeUsers.findIndex((u) => u === name);
-                      if (myIndex === -1 || currentTurnIndex === -1) return null;
+                      if (myIndex === -1 || currentTurnIndex === -1)
+                        return null;
                       const turnsAway =
                         myIndex >= currentTurnIndex
                           ? myIndex - currentTurnIndex
@@ -140,7 +141,8 @@ export default function Home() {
                       return turnsAway === 0 ? (
                         <>
                           <ClockIcon className="w-5 h-5 inline-block mr-1 text-gray-700" />
-                          {timeLeft} second{timeLeft !== 1 ? "s" : ""} left to write
+                          {timeLeft} second{timeLeft !== 1 ? "s" : ""} left to
+                          write
                         </>
                       ) : (
                         <>
@@ -168,7 +170,9 @@ export default function Home() {
               className="flex-1 overflow-y-auto min-h-0"
             >
               {story.length === 0 ? (
-                <p className="text-gray-400 italic">No one has started yet...</p>
+                <p className="text-gray-400 italic">
+                  No one has started yet...
+                </p>
               ) : (
                 story.map(({ text, author }, index) => (
                   <blockquote
@@ -238,14 +242,13 @@ export default function Home() {
               <span className="font-semibold">Start New Story</span> at the top.
             </li>
             <li>
-              Use <span className="font-semibold">...</span> to indicate  someone should continue your sentence.
+              Use <span className="font-semibold">...</span> to indicate someone
+              should continue your sentence.
             </li>
             <li>
               Keep your sentences short and connected to the previous ones.
             </li>
-            <li>
-              Have fun — unexpected twists are encouraged!
-            </li>
+            <li>Have fun — unexpected twists are encouraged!</li>
           </ul>
         </div>
 
