@@ -2,6 +2,8 @@
 
 A collaborative, turn-based story writing web app built with **Next.js**, **Express**, and **WebSockets**. Users take turns writing stories together in real-time.
 
+You can try the live version at [https://lined-frontend.vercel.app](https://lined-frontend.vercel.app) – please note that due to Render's free tier, the backend may take up to 50 seconds to wake up.
+
 ## Features
 
 - Real-time collaboration via WebSockets
@@ -11,8 +13,6 @@ A collaborative, turn-based story writing web app built with **Next.js**, **Expr
 - Character limit per turn
 - Live story preview
 - Option to start over
-
----
 
 ## Tech Stack
 
@@ -28,8 +28,6 @@ A collaborative, turn-based story writing web app built with **Next.js**, **Expr
 - **Express.js**
 - **Socket.IO Server**
 - **ESM Modules**
-
----
 
 ## Getting Started
 
@@ -60,13 +58,9 @@ npm run dev
 
 Launch the app by visiting `http://localhost:3000`.
 
----
-
 ## Configuration
 
 This project uses a `.env.local` file in the `frontend` folder to store backend URLs for development and production.
-
----
 
 ## Dependencies
 
@@ -84,8 +78,6 @@ This project uses a `.env.local` file in the `frontend` folder to store backend 
 - `socket.io`
 - `cors`
 - `typescript`
-
----
 
 ## Contributors
 
