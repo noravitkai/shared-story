@@ -11,15 +11,16 @@ const io = new Server(server, {
   },
 });
 
-// Story game state
 let story = [];
 let users = [];
 let currentTurnIndex = 0;
 let turnTimeLeft = 30;
 let turnTimer;
 let isEnded = false;
+const BOT_ID = "bot";
+const BOT_NAME = "StoryBot";
+const BOT_DELAY_MS = 2000;
 
-// Bot sentences
 const botSentences = [
   "Suddenly, a mysterious shadow appeared.",
   "The wind whispered secrets...",
@@ -63,13 +64,19 @@ const botSentences = [
   "The fog machine went unnoticed until this point.",
 ];
 
-// Sentence generator
 function generateBotSentence() {
   const index = Math.floor(Math.random() * botSentences.length);
   return botSentences[index];
 }
 
-// Socket.io logic
+function getParticipants() {
+  const participants = [...users];
+  if (participants.length === 1) {
+    participants.push({ id: BOT_ID, name: BOT_NAME });
+  }
+  return participants;
+}
+
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
@@ -90,9 +97,9 @@ io.on("connection", (socket) => {
 
     socket.emit("story_update", story);
     socket.emit("your_turn", users.length - 1 === currentTurnIndex);
-
+    const participants = getParticipants();
     io.emit("game_state", {
-      users: users.map((user) => user.name),
+      users: participants.map((user) => user.name),
       currentTurnIndex,
       turnTimeLeft,
       isEnded,
@@ -147,6 +154,10 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     users = users.filter((user) => user.id !== socket.id);
+    if (users.length === 0) {
+      clearInterval(turnTimer);
+      return;
+    }
     if (currentTurnIndex >= users.length) {
       currentTurnIndex = 0;
     }
@@ -157,20 +168,20 @@ io.on("connection", (socket) => {
       turnTimeLeft,
       isEnded,
     });
-
-    if (users.length === 0) {
-      clearInterval(turnTimer);
-    }
   });
 
   function passTurn() {
-    currentTurnIndex = (currentTurnIndex + 1) % users.length;
+    const participants = getParticipants();
+    currentTurnIndex = (currentTurnIndex + 1) % participants.length;
     updateTurn();
   }
 
   function updateTurn() {
-    users.forEach((user, index) => {
-      io.to(user.id).emit("your_turn", index === currentTurnIndex);
+    const participants = getParticipants();
+    participants.forEach((user, index) => {
+      if (user.id !== BOT_ID) {
+        io.to(user.id).emit("your_turn", index === currentTurnIndex);
+      }
     });
 
     clearInterval(turnTimer);
@@ -187,15 +198,24 @@ io.on("connection", (socket) => {
     }, 1000);
 
     io.emit("game_state", {
-      users: users.map((user) => user.name),
+      users: participants.map((user) => user.name),
       currentTurnIndex,
       turnTimeLeft,
       isEnded,
     });
+
+    const current = participants[currentTurnIndex];
+    if (participants.length > 0 && !isEnded && current.id === BOT_ID) {
+      setTimeout(() => {
+        const text = generateBotSentence();
+        story.push({ text, author: BOT_NAME });
+        io.emit("story_update", story);
+        passTurn();
+      }, BOT_DELAY_MS);
+    }
   }
 });
 
-// Start server
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`✅ Socket.IO server running on http://localhost:${PORT}`);

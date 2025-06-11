@@ -98,9 +98,7 @@ export default function Home() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_250px] gap-6 h-screen box-border p-6 bg-[#f9f9f9] font-serif text-gray-900">
-      {/* Right content area */}
       <div className="flex flex-col flex-1 min-h-0 gap-6">
-        {/* Turn Countdown / Ended Message */}
         <div className="bg-white rounded p-4 shadow">
           <div className="flex items-center justify-between">
             <Image
@@ -158,9 +156,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Story Lines and Input Box grouped */}
         <div className="flex flex-col flex-1 min-h-0 gap-4">
-          {/* Story Lines - scrollable */}
           <div className="bg-white rounded p-4 shadow flex-1 flex flex-col min-h-0">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">
               The Story:
@@ -182,6 +178,7 @@ export default function Home() {
                     {text}
                     <span className="block text-xs italic text-gray-400 mt-1">
                       — {author}
+                      {author === "StoryBot" ? " 🤖" : ""}
                     </span>
                   </blockquote>
                 ))
@@ -189,7 +186,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Input Box - bottom */}
           <div className="bg-white rounded p-4 shadow">
             <form
               onSubmit={(e) => {
@@ -222,9 +218,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Left sidebar */}
       <div className="grid grid-cols-2 gap-4 h-full min-h-0 lg:flex lg:flex-col lg:gap-6 lg:sticky lg:top-0">
-        {/* Info Box */}
         <div className="bg-white rounded p-4 shadow">
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
             How to Play
@@ -234,8 +228,8 @@ export default function Home() {
             <li>Each player adds 1 sentence (max 75 characters).</li>
             <li>You have 30 seconds for your turn.</li>
             <li>
-              Type <span className="font-semibold">/THE END</span> (all caps) to
-              finish the story.
+              Type <span className="font-semibold">/THE END</span> (slash and
+              all caps) to finish the story.
             </li>
             <li>
               To begin a new story, click{" "}
@@ -252,7 +246,6 @@ export default function Home() {
           </ul>
         </div>
 
-        {/* User List */}
         <div className="bg-white rounded p-4 shadow overflow-y-auto flex-1 min-h-0">
           <h2 className="text-xl font-semibold text-gray-800 mb-2">Players:</h2>
           <div className="flex flex-col gap-2">
@@ -266,6 +259,7 @@ export default function Home() {
                   }`}
                 >
                   {user}
+                  {user === "StoryBot" && " 🤖"}
                 </span>
                 {index === currentTurnIndex && (
                   <div className="absolute -top-1 -right-1 w-5 h-5 bg-gray-100 border rounded-full flex items-center justify-center">
