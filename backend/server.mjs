@@ -21,14 +21,14 @@ const BOT_ID = "bot";
 const BOT_NAME = "StoryBot";
 const BOT_DELAY_MS = 2000;
 
-const botSentences = [
+const defaultSentences = [
   "Suddenly, a mysterious shadow appeared.",
   "The wind whispered secrets...",
   "Out of nowhere, a loud crash echoed.",
   "Something stirred in a forming darkness.",
   "A sense of unease filled the air.",
   "Then, a soft glow started to pulse in the distance.",
-  "An eerie calm settled over everything..",
+  "An eerie calm settled over everything...",
   "A chill ran through the atmosphere.",
   "Without warning, the ground trembled.",
   "Time seemed to pause for a heartbeat.",
@@ -46,28 +46,45 @@ const botSentences = [
   "Something valuable had just been lost.",
   "Something about the moment hinted at more to come.",
   "Nothing seemed wrong — yet.",
-  "Just when it seemed like nothing would happen…",
-  "Then came the feeling — that strange, certain sense that…",
-  "No one expected what came after…",
+  "Just when it seemed like nothing would happen...",
+  "Then came the feeling — that strange, certain sense that...",
+  "No one expected what came after...",
   "And just like that, everything changed because…",
-  "No one knew why a banana was there, but…",
+  "No one knew why a banana was there, but...",
   "Suddenly, someone yelled the following:",
   "Long pause, then the loud declaration:",
-  "There was a chase then, though no one knew who was being chased until…",
-  "There was absolutely no reason for the rubber duck, and yet…",
+  "There was a chase then, though no one knew who was being chased until...",
+  "There was absolutely no reason for the rubber duck, and yet...",
   "Someone had clearly been here before — judging by the sandwich.",
-  "No one expected a pie to explode, and yet…",
-  "A squirrel ran by holding something that looked like…",
-  "The ground was sticky, which usually meant…",
-  "A sock puppet peeked out from behind, then whispered…",
+  "No one expected a pie to explode, and yet...",
+  "A squirrel ran by holding something that looked like...",
+  "The ground was sticky, which usually meant...",
+  "A sock puppet peeked out from behind, then whispered...",
   "There was confetti, but no sign of a celebration.",
   "The fog machine went unnoticed until this point.",
 ];
 
-function generateBotSentence() {
-  const index = Math.floor(Math.random() * botSentences.length);
-  return botSentences[index];
-}
+const continuationSentences = [
+  "...and that was only the beginning.",
+  "...the mystery deepened with each word.",
+  "...the path ahead unfolded in unexpected ways.",
+  "...the next chapter was about to begin.",
+  "...and then, of course, the lights flickered.",
+  "...which made what happened stranger...",
+  "...right when it mattered most.",
+  "...with a kind of quiet certainty.",
+  "...but some things are better left unfinished.",
+  "...which was kind of awkward, considering the goat.",
+  "...just before the dramatic entrance of an inflatable narwhal.",
+  "...which would have been fine, if the pigeons around hadn’t unionized.",
+  "...but no one accounted for the angry barista.",
+  "...right before the something hit the wall.",
+  "...as confetti rained down for absolutely no reason.",
+  "...but then someone yelled ‘plot twist!’ and fell over.",
+  "...and suddenly, everyone was wearing socks on their hands.",
+];
+
+let lastWasContinuation = false;
 
 function getParticipants() {
   const participants = [...users];
@@ -118,6 +135,8 @@ io.on("connection", (socket) => {
     ) {
       return;
     }
+
+    lastWasContinuation = trimmed.endsWith("...");
 
     const author = users[currentTurnIndex].name;
     story.push({ text: trimmed, author });
@@ -206,8 +225,12 @@ io.on("connection", (socket) => {
 
     const current = participants[currentTurnIndex];
     if (participants.length > 0 && !isEnded && current.id === BOT_ID) {
+      const pool = lastWasContinuation ? continuationSentences : defaultSentences;
+      lastWasContinuation = false;
+
       setTimeout(() => {
-        const text = generateBotSentence();
+        const index = Math.floor(Math.random() * pool.length);
+        const text = pool[index];
         story.push({ text, author: BOT_NAME });
         io.emit("story_update", story);
         passTurn();
