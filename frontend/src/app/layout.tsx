@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Shared Story",
+  title: "Lined – A Shared Story App",
   description: "A real-time collaborative story writing app.",
   icons: {
     icon: "/favicon.png",

@@ -25,14 +25,16 @@ export function useSocket(name: string) {
       transports: ["websocket"],
     });
 
-    socket.emit("join", name);
-
     socket.on(
       "story_update",
       (updatedStory: { text: string; author: string }[]) => {
         setStory(updatedStory);
       }
     );
+
+    socket.on("new_sentence", (data: { text: string; author: string }) => {
+      setStory((prev) => [...prev, { text: data.text, author: data.author }]);
+    });
 
     socket.on("your_turn", (turnStatus: boolean) => {
       setIsMyTurn(turnStatus);
@@ -51,7 +53,9 @@ export function useSocket(name: string) {
         turnTimeLeft: number;
         isEnded: boolean;
       }) => {
-        setUsers(newUsers);
+        const displayUsers =
+          newUsers.length === 1 ? [newUsers[0], "StoryBot"] : newUsers;
+        setUsers(displayUsers);
         setCurrentTurnIndex(currentTurnIndex);
         setTimeLeft(turnTimeLeft);
         setIsEnded(isEnded);
@@ -61,6 +65,8 @@ export function useSocket(name: string) {
     socket.on("timer_tick", (seconds: number) => {
       setTimeLeft(seconds);
     });
+
+    socket.emit("join", name);
 
     return () => {
       socket?.disconnect();

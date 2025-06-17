@@ -11,15 +11,89 @@ const io = new Server(server, {
   },
 });
 
-// Story game state
 let story = [];
 let users = [];
 let currentTurnIndex = 0;
 let turnTimeLeft = 30;
 let turnTimer;
 let isEnded = false;
+const BOT_ID = "bot";
+const BOT_NAME = "StoryBot";
+const BOT_DELAY_MS = 2000;
 
-// Socket.io logic
+const defaultSentences = [
+  "Suddenly, a mysterious shadow appeared.",
+  "The wind whispered secrets...",
+  "Out of nowhere, a loud crash echoed.",
+  "Something stirred in a forming darkness.",
+  "A sense of unease filled the air.",
+  "Then, a soft glow started to pulse in the distance.",
+  "An eerie calm settled over everything...",
+  "A chill ran through the atmosphere.",
+  "Without warning, the ground trembled.",
+  "Time seemed to pause for a heartbeat.",
+  "Everything felt different and somehow changed.",
+  "The moment felt like the beginning of something.",
+  "Somehow, it all made sense — and none of it did.",
+  "It felt both too late and far too soon.",
+  "The rhythm of things had changed — subtly, but surely",
+  "A question lingered in the stillness, unanswered.",
+  "It all seemed simple until it wasn’t.",
+  "The world did not pause, but something within did.",
+  "The next second felt like a lifetime.",
+  "It was too late to pretend nothing had changed.",
+  "Decision had to be made — quickly.",
+  "Something valuable had just been lost.",
+  "Something about the moment hinted at more to come.",
+  "Nothing seemed wrong — yet.",
+  "Just when it seemed like nothing would happen...",
+  "Then came the feeling — that strange, certain sense that...",
+  "No one expected what came after...",
+  "And just like that, everything changed because…",
+  "No one knew why a banana was there, but...",
+  "Suddenly, someone yelled the following:",
+  "Long pause, then the loud declaration:",
+  "There was a chase then, though no one knew who was being chased until...",
+  "There was absolutely no reason for the rubber duck, and yet...",
+  "Someone had clearly been here before — judging by the sandwich.",
+  "No one expected a pie to explode, and yet...",
+  "A squirrel ran by holding something that looked like...",
+  "The ground was sticky, which usually meant...",
+  "A sock puppet peeked out from behind, then whispered...",
+  "There was confetti, but no sign of a celebration.",
+  "The fog machine went unnoticed until this point.",
+];
+
+const continuationSentences = [
+  "...and that was only the beginning.",
+  "...the mystery deepened with each word.",
+  "...the path ahead unfolded in unexpected ways.",
+  "...the next chapter was about to begin.",
+  "...and then, of course, the lights flickered.",
+  "...which made what happened stranger...",
+  "...right when it mattered most.",
+  "...with a kind of quiet certainty.",
+  "...but some things are better left unfinished.",
+  "...which was kind of awkward, considering the goat.",
+  "...just before the dramatic entrance of an inflatable narwhal.",
+  "...which would have been fine, if the pigeons around hadn’t unionized.",
+  "...but no one accounted for the angry barista.",
+  "...right before the something hit the wall.",
+  "...as confetti rained down for absolutely no reason.",
+  "...but then someone yelled ‘plot twist!’ and fell over.",
+  "...and suddenly, everyone was wearing socks on their hands.",
+];
+
+let lastWasContinuation = false;
+
+function getParticipants() {
+  const participants = [...users];
+  if (participants.length === 1) {
+    participants.push({ id: BOT_ID, name: BOT_NAME });
+  }
+  return participants;
+}
+
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
@@ -40,9 +114,9 @@ io.on("connection", (socket) => {
 
     socket.emit("story_update", story);
     socket.emit("your_turn", users.length - 1 === currentTurnIndex);
-
+    const participants = getParticipants();
     io.emit("game_state", {
-      users: users.map((user) => user.name),
+      users: participants.map((user) => user.name),
       currentTurnIndex,
       turnTimeLeft,
       isEnded,
@@ -61,6 +135,8 @@ io.on("connection", (socket) => {
     ) {
       return;
     }
+
+    lastWasContinuation = trimmed.endsWith("...");
 
     const author = users[currentTurnIndex].name;
     story.push({ text: trimmed, author });
@@ -97,6 +173,10 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     users = users.filter((user) => user.id !== socket.id);
+    if (users.length === 0) {
+      clearInterval(turnTimer);
+      return;
+    }
     if (currentTurnIndex >= users.length) {
       currentTurnIndex = 0;
     }
@@ -107,20 +187,20 @@ io.on("connection", (socket) => {
       turnTimeLeft,
       isEnded,
     });
-
-    if (users.length === 0) {
-      clearInterval(turnTimer);
-    }
   });
 
   function passTurn() {
-    currentTurnIndex = (currentTurnIndex + 1) % users.length;
+    const participants = getParticipants();
+    currentTurnIndex = (currentTurnIndex + 1) % participants.length;
     updateTurn();
   }
 
   function updateTurn() {
-    users.forEach((user, index) => {
-      io.to(user.id).emit("your_turn", index === currentTurnIndex);
+    const participants = getParticipants();
+    participants.forEach((user, index) => {
+      if (user.id !== BOT_ID) {
+        io.to(user.id).emit("your_turn", index === currentTurnIndex);
+      }
     });
 
     clearInterval(turnTimer);
@@ -137,15 +217,28 @@ io.on("connection", (socket) => {
     }, 1000);
 
     io.emit("game_state", {
-      users: users.map((user) => user.name),
+      users: participants.map((user) => user.name),
       currentTurnIndex,
       turnTimeLeft,
       isEnded,
     });
+
+    const current = participants[currentTurnIndex];
+    if (participants.length > 0 && !isEnded && current.id === BOT_ID) {
+      const pool = lastWasContinuation ? continuationSentences : defaultSentences;
+      lastWasContinuation = false;
+
+      setTimeout(() => {
+        const index = Math.floor(Math.random() * pool.length);
+        const text = pool[index];
+        story.push({ text, author: BOT_NAME });
+        io.emit("story_update", story);
+        passTurn();
+      }, BOT_DELAY_MS);
+    }
   }
 });
 
-// Start server
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`✅ Socket.IO server running on http://localhost:${PORT}`);
