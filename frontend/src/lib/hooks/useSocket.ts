@@ -21,9 +21,7 @@ export function useSocket(name: string) {
         ? process.env.NEXT_PUBLIC_SOCKET_URL_PROD
         : process.env.NEXT_PUBLIC_SOCKET_URL_DEV;
 
-    socket = io(socketUrl || "", {
-      transports: ["websocket"],
-    });
+    socket = io(socketUrl || "");
 
     socket.on(
       "story_update",
